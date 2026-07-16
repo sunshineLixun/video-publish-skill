@@ -16,6 +16,8 @@ All notable changes to this project will be documented in this file. The format 
   module; the bundled Skill CLI continues to target Node.js 20.
 - Public documentation now separates the contributor development guide from the CLI reference and
   removes obsolete migration-oriented implementation notes.
+- Weibo and Zhihu were removed from the platform registry; the supported platform surface now
+  matches the four Ego Lite staging adapters.
 
 ## [0.1.0] - 2026-07-15
 

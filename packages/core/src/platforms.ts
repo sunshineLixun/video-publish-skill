@@ -1,13 +1,6 @@
 import { z } from "zod";
 
-export const platformIdSchema = z.enum([
-  "rednote",
-  "weibo",
-  "zhihu",
-  "bilibili",
-  "douyin",
-  "wechat_channels",
-]);
+export const platformIdSchema = z.enum(["rednote", "bilibili", "douyin", "wechat_channels"]);
 
 export type PlatformId = z.infer<typeof platformIdSchema>;
 
@@ -24,18 +17,6 @@ export const platforms = [
     name: "小红书",
     publishUrl: "https://creator.xiaohongshu.com/publish/publish",
     description: "创作服务平台",
-  },
-  {
-    id: "weibo",
-    name: "微博",
-    publishUrl: "https://weibo.com/",
-    description: "微博发布首页",
-  },
-  {
-    id: "zhihu",
-    name: "知乎",
-    publishUrl: "https://www.zhihu.com/creator",
-    description: "知乎创作中心",
   },
   {
     id: "bilibili",

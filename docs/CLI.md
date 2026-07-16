@@ -144,8 +144,6 @@ video-publish platforms list
 平台注册 ID：
 
 - `rednote`
-- `weibo`
-- `zhihu`
 - `bilibili`
 - `douyin`
 - `wechat_channels`

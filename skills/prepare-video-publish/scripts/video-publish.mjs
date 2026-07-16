@@ -14599,32 +14599,13 @@ function createDefaultCoverSpec(content) {
 }
 
 // ../core/src/platforms.ts
-var platformIdSchema = external_exports.enum([
-  "rednote",
-  "weibo",
-  "zhihu",
-  "bilibili",
-  "douyin",
-  "wechat_channels"
-]);
+var platformIdSchema = external_exports.enum(["rednote", "bilibili", "douyin", "wechat_channels"]);
 var platforms = [
   {
     id: "rednote",
     name: "\u5C0F\u7EA2\u4E66",
     publishUrl: "https://creator.xiaohongshu.com/publish/publish",
     description: "\u521B\u4F5C\u670D\u52A1\u5E73\u53F0"
-  },
-  {
-    id: "weibo",
-    name: "\u5FAE\u535A",
-    publishUrl: "https://weibo.com/",
-    description: "\u5FAE\u535A\u53D1\u5E03\u9996\u9875"
-  },
-  {
-    id: "zhihu",
-    name: "\u77E5\u4E4E",
-    publishUrl: "https://www.zhihu.com/creator",
-    description: "\u77E5\u4E4E\u521B\u4F5C\u4E2D\u5FC3"
   },
   {
     id: "bilibili",

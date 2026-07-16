@@ -112,7 +112,7 @@ node "$SKILL_DIR/scripts/video-publish.mjs" platforms open \
   --platform bilibili
 ```
 
-Platform IDs are `rednote`, `weibo`, `zhihu`, `bilibili`, `douyin`, and `wechat_channels`. The
+Platform IDs are `rednote`, `bilibili`, `douyin`, and `wechat_channels`. The
 runtime rejects opening without `--confirmed`, finalized content, a complete cover version, and a
 video.
 
