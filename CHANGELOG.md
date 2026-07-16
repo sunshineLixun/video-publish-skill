@@ -10,6 +10,11 @@ All notable changes to this project will be documented in this file. The format 
 - Open-source governance, security, contribution, CI, and release documentation.
 - Reproducible pnpm 11 toolchain with the current npm vulnerability-audit endpoint.
 
+### Changed
+
+- Development and CI now require Node.js 22.13+ because pnpm 11 uses the built-in `node:sqlite`
+  module; the bundled Skill CLI continues to target Node.js 20.
+
 ## [0.1.0] - 2026-07-15
 
 ### Added

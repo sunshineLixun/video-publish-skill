@@ -23,7 +23,9 @@ button.
 
 ## Requirements
 
-- Node.js 20+, pnpm 11, and a Codex installation with Agent Skills and ImageGen.
+- Node.js 22.13+ for development, builds, and installation; the bundled Skill CLI still targets
+  Node.js 20.
+- A Codex installation with Agent Skills and ImageGen.
 - FFmpeg and FFprobe.
 - Python 3 plus `faster-whisper` when the input has no usable subtitles.
 - Google Chrome or Chromium for opening creator pages.

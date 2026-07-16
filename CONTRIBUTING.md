@@ -23,7 +23,8 @@ pnpm check-types
 pnpm build
 ```
 
-Node.js 20+ and pnpm 11 are required. FFmpeg, Python/faster-whisper, Chrome, and Ego Lite are only
+Node.js 22.13+ and pnpm 11 are required for repository development. The bundled Skill CLI continues
+to target Node.js 20. FFmpeg, Python/faster-whisper, Chrome, and Ego Lite are only
 needed when manually exercising the corresponding runtime paths.
 
 ## Repository boundaries

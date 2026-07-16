@@ -113,7 +113,7 @@ runtime 和转写脚本打包进最终 Skill。没有前端 workspace。
 - 文本理解和多轮交互：当前 Codex 任务。
 - 图片生成：Codex 内置 ImageGen。
 - 数据校验：Zod。
-- 本地运行时：Node.js 20+、TypeScript、tsup。
+- 开发与构建：Node.js 22.13+、TypeScript、tsup；最终 runtime bundle 仍以 Node.js 20 为目标。
 - 字幕提取：FFmpeg/FFprobe。
 - 无字幕视频转写：Python 3、faster-whisper。
 - 平台启动：系统 Chrome/Chromium。
