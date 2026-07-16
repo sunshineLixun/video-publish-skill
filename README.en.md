@@ -2,6 +2,8 @@
 
 [中文](README.md) · [Development](docs/DEVELOPMENT.md) · [CLI](docs/CLI.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md)
 
+[![skills.sh](https://skills.sh/b/sunshineLixun/video-publish-skill)](https://www.skills.sh/sunshinelixun/video-publish-skill)
+
 A local-first Codex skill that prepares video publishing assets. It creates platform copy and four
 AI cover ratios from a video or transcript, then—with explicit user authorization—can stage the
 video, cover, and metadata in creator portals. The user always reviews and clicks the final publish
@@ -21,7 +23,28 @@ button.
 - Optionally stage forms for Xiaohongshu, Douyin, Bilibili, and WeChat Channels through Ego Lite.
 - Persist local session state for interruption recovery and page-fact verification.
 
-## One-command install
+## Install
+
+### skills.sh (recommended)
+
+```bash
+npx skills add sunshineLixun/video-publish-skill \
+  --skill prepare-video-publish \
+  --global \
+  --agent codex \
+  --yes
+```
+
+skills.sh discovers `skills/prepare-video-publish/SKILL.md` and installs it for Codex globally. To
+update later:
+
+```bash
+npx skills update prepare-video-publish --global --yes
+```
+
+Directory page: [skills.sh/sunshinelixun/video-publish-skill](https://www.skills.sh/sunshinelixun/video-publish-skill).
+
+### Standalone installers
 
 macOS / Linux:
 
@@ -42,14 +65,24 @@ the same command again to upgrade. Git, pnpm, and a source checkout are not requ
 
 Set `VIDEO_PUBLISH_REF` before running the command to install a specific Git ref.
 
-## User requirements
+## How dependencies are handled
 
-- A Codex installation with Agent Skills and ImageGen.
-- Node.js 20+ available to the Codex environment.
-- FFmpeg and FFprobe.
-- Python 3 plus `faster-whisper` when the input has no usable subtitles.
-- Google Chrome or Chromium for opening creator pages.
-- Optional: Ego Lite and the `ego-browser` command for automated staging.
+The installers only install the Skill. They do not silently modify the operating system or install
+third-party software. Users do not need every tool up front; the Skill checks capabilities only when
+the corresponding feature is used:
+
+| Use case                           | Capability checked on demand                    |
+| ---------------------------------- | ----------------------------------------------- |
+| Run the Skill CLI                  | Node.js 20+                                     |
+| Process a subtitle file directly   | No FFmpeg or Whisper required                   |
+| Read embedded video subtitles      | FFmpeg and FFprobe                              |
+| Transcribe video without subtitles | FFmpeg, FFprobe, Python 3, and `faster-whisper` |
+| Open creator pages only            | Chrome or Chromium                              |
+| Stage platform forms               | Ego Lite and `ego-browser`                      |
+
+ImageGen comes from a compatible Codex environment. FFmpeg, Chrome, and Ego Lite are system-level or
+standalone applications and should not be installed silently by a Skill installer. See the
+[runtime recovery guide](skills/prepare-video-publish/references/runtime.md) for exact recovery steps.
 
 ## Use
 

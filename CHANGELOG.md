@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. The format 
 - Open-source governance, security, contribution, CI, and release documentation.
 - Reproducible pnpm 11 toolchain with the current npm vulnerability-audit endpoint.
 - One-command macOS/Linux and Windows installers that download only the prebuilt Codex Skill.
+- Verified skills.sh discovery and global Codex installation instructions.
 
 ### Changed
 
@@ -19,6 +20,8 @@ All notable changes to this project will be documented in this file. The format 
   removes obsolete migration-oriented implementation notes.
 - Weibo and Zhihu were removed from the platform registry; the supported platform surface now
   matches the four Ego Lite staging adapters.
+- User documentation now describes optional runtime capabilities checked on demand instead of
+  presenting every integration as an installation prerequisite.
 
 ## [0.1.0] - 2026-07-15
 

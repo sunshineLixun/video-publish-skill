@@ -168,12 +168,17 @@ After the result reports `review-required`, summarize each platform result and a
 or timeout. Stop without clicking publish. Do not solve CAPTCHAs, bypass risk controls, inspect
 cookies, export authentication state, or use another browser tool to complete the final action.
 
-## Runtime Requirements
+## Runtime Capabilities
 
-- Node.js 20 or newer.
-- `ffmpeg` and `ffprobe` for video input.
+Do not require every optional tool before starting. Check capabilities only when the selected path
+needs them:
+
+- Node.js 20 or newer for the bundled CLI.
+- `ffmpeg` and `ffprobe` only for video input.
 - Python 3 and `faster-whisper` only when a video has no usable subtitle track.
-- Ego Lite and the `ego-browser` command for staging.
+- Ego Lite and the `ego-browser` command only for staging.
 - Google Chrome or Chromium only for opening confirmed publishing pages without staging.
 
-On failure, read [runtime.md](references/runtime.md) and report the exact missing dependency.
+The Skill installer does not silently install system software. On failure, read
+[runtime.md](references/runtime.md), report the exact missing capability, and get user approval before
+making system-level changes.

@@ -16,7 +16,8 @@ This repository distributes source plus a prebuilt installable Skill. It is inte
    `pnpm install:skill --destination /tmp/prepare-video-publish-release`.
 8. Verify the temporary package contains `SKILL.md`, references, licenses, the CLI bundle, the
    transcription script, and the Ego engine—but no sessions, credentials, logs, or `node_modules`.
-9. Run both public one-command installers against the release ref in disposable Codex homes.
+9. Verify skills.sh discovery and run both standalone installers against the release ref in disposable
+   Codex homes.
 10. Confirm GitHub private vulnerability reporting and `main` branch protection are enabled.
 11. Create a signed tag named `v<version>` and a GitHub release from that tag.
 
