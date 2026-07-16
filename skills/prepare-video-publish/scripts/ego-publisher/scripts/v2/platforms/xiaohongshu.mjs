@@ -334,23 +334,38 @@ async function mutateXiaohongshu() {
   const before = await inspectXiaohongshu();
   if (!before.gates.video.ok) return { ...before, blocker: typedBlocker('STATE_AMBIGUOUS', '小红书没有可修复的已上传视频') };
   const actions = {};
+  const failures = [];
   if (!before.gates.title.ok) actions.title = await setNativeInputValue('input[placeholder*="填写标题"]', xhsTitle);
   const afterTitle = await inspectXiaohongshu();
   if (!(afterTitle.gates.description.ok && afterTitle.gates.tags.ok)) actions.tags = await rebuildXhsTopics();
-  if (actions.tags && !actions.tags.ok) return { ...(await inspectXiaohongshu()), blocker: typedBlocker('ACTION_FAILED', actions.tags.reason, { evidence: actions.tags }) };
+  if (actions.tags && !actions.tags.ok) {
+    failures.push({ action: 'tags', code: 'PLATFORM_REJECTED_METADATA', reason: actions.tags.reason, retryable: true, result: actions.tags });
+  }
   if (xhsOriginalDeclaration) {
     actions.original = await ensureXhsOriginal();
-    if (!actions.original.ok) return { ...(await inspectXiaohongshu()), blocker: typedBlocker('ACTION_FAILED', actions.original.reason, { evidence: actions.original }) };
+    if (!actions.original.ok) {
+      failures.push({ action: 'original', code: 'ACTION_FAILED', reason: actions.original.reason, retryable: false, result: actions.original });
+    }
   }
   actions.cover = await uploadXhsCover();
-  if (!actions.cover.ok) return { ...(await inspectXiaohongshu()), blocker: typedBlocker('PLATFORM_REJECTED_ASSET', actions.cover.reason, { retryable: true, evidence: actions.cover }) };
+  if (!actions.cover.ok) {
+    failures.push({ action: 'cover', code: 'PLATFORM_REJECTED_ASSET', reason: actions.cover.reason, retryable: true, result: actions.cover });
+  }
   const receipts = actions.cover.receipt ? { cover: actions.cover.receipt } : {};
   actions.receiptCheckpoint = checkpointReceipts(receipts);
   const previousReceipts = expectedReceipts;
   expectedReceipts.cover = receipts.cover || expectedReceipts.cover;
   const after = await inspectXiaohongshu();
   Object.assign(expectedReceipts, previousReceipts, receipts);
-  return { ...after, actions, receipts };
+  if (!failures.length) return { ...after, actions, receipts };
+  const [failure] = failures;
+  const blocker = failures.length === 1
+    ? typedBlocker(failure.code, failure.reason, { retryable: failure.retryable, evidence: { failures, actionResults: actions } })
+    : typedBlocker('ACTION_FAILED', failures.map(item => `${item.action}: ${item.reason}`).join('; '), {
+        retryable: failures.every(item => item.retryable),
+        evidence: { failures, actionResults: actions },
+      });
+  return { ...after, actions, receipts, blocker };
 }
 
 async function runPlatformPhase() {

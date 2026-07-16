@@ -23,6 +23,11 @@ All notable changes to this project will be documented in this file. The format 
 - User documentation now describes optional runtime capabilities checked on demand instead of
   presenting every integration as an installation prerequisite.
 
+### Fixed
+
+- Xiaohongshu and Bilibili now attempt custom-cover staging even when topic or tag persistence
+  fails, preserve successful cover receipts, and report metadata and cover outcomes separately.
+
 ## [0.1.0] - 2026-07-15
 
 ### Added
