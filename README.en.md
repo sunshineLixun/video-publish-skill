@@ -21,34 +21,35 @@ button.
 - Optionally stage forms for Xiaohongshu, Douyin, Bilibili, and WeChat Channels through Ego Lite.
 - Persist local session state for interruption recovery and page-fact verification.
 
-## Requirements
+## One-command install
 
-- Node.js 22.13+ for development, builds, and installation; the bundled Skill CLI still targets
-  Node.js 20.
+macOS / Linux:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sunshineLixun/video-publish-skill/main/install.sh | sh
+```
+
+Windows PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/sunshineLixun/video-publish-skill/main/install.ps1 | iex
+```
+
+The installer downloads only the prebuilt Skill and installs it under
+`$CODEX_HOME/skills/prepare-video-publish`, or `~/.codex/skills/prepare-video-publish` when
+`CODEX_HOME` is unset. It validates the new package before replacing an existing installation. Run
+the same command again to upgrade. Git, pnpm, and a source checkout are not required.
+
+Set `VIDEO_PUBLISH_REF` before running the command to install a specific Git ref.
+
+## User requirements
+
 - A Codex installation with Agent Skills and ImageGen.
+- Node.js 20+ available to the Codex environment.
 - FFmpeg and FFprobe.
 - Python 3 plus `faster-whisper` when the input has no usable subtitles.
 - Google Chrome or Chromium for opening creator pages.
 - Optional: Ego Lite and the `ego-browser` command for automated staging.
-
-## Install
-
-```bash
-git clone https://github.com/sunshineLixun/video-publish-skill.git
-cd video-publish-skill
-corepack enable
-pnpm install --frozen-lockfile
-pnpm build
-pnpm install:skill
-```
-
-The default destination is `$CODEX_HOME/skills/prepare-video-publish`, or
-`~/.codex/skills/prepare-video-publish` when `CODEX_HOME` is unset. Pass `--force` through the pnpm
-script when replacing an existing installation:
-
-```bash
-pnpm install:skill --force
-```
 
 ## Use
 
@@ -86,7 +87,7 @@ pnpm build
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), and the
 [architecture decisions](docs/decisions/README.md) for the project structure and contribution
-rules.
+rules. Cloning the repository, Node.js 22.13+, and pnpm 11 are development requirements only.
 
 ## Third-party software
 

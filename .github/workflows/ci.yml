@@ -41,6 +41,12 @@ jobs:
       - name: Audit open-source boundary
         run: pnpm check:opensource
 
+      - name: Validate installers
+        shell: bash
+        run: |
+          sh -n install.sh
+          pwsh -NoProfile -Command '[scriptblock]::Create((Get-Content -Raw ./install.ps1)) | Out-Null'
+
       - name: Check formatting
         run: pnpm fmt:check
 

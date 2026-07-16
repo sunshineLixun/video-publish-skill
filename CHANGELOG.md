@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file. The format 
 
 - Open-source governance, security, contribution, CI, and release documentation.
 - Reproducible pnpm 11 toolchain with the current npm vulnerability-audit endpoint.
+- One-command macOS/Linux and Windows installers that download only the prebuilt Codex Skill.
 
 ### Changed
 
