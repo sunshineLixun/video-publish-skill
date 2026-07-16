@@ -1,0 +1,66 @@
+name: Bug report
+description: Report reproducible incorrect behavior
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Remove account names, local absolute paths, cookies, tokens, QR codes, and unpublished media.
+        Report security issues through the private vulnerability form instead.
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: v0.1.0 or full commit SHA
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Transcript preparation
+        - Content or session validation
+        - Cover workflow
+        - Creator-page opening
+        - Xiaohongshu staging
+        - Douyin staging
+        - Bilibili staging
+        - WeChat Channels staging
+        - Build or installation
+        - Documentation
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Node.js, pnpm, Codex, and optional Ego Lite versions
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Redacted reproduction steps
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and redacted output
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Privacy confirmation
+      options:
+        - label: I removed credentials, personal data, QR codes, local paths, and unpublished media.
+          required: true

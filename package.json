@@ -1,0 +1,45 @@
+{
+  "name": "video-publish-skill",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-first Codex skill for preparing and staging video publishing assets",
+  "keywords": [
+    "agent-skill",
+    "automation",
+    "codex",
+    "publishing",
+    "video"
+  ],
+  "homepage": "https://github.com/sunshineLixun/video-publish-skill#readme",
+  "bugs": {
+    "url": "https://github.com/sunshineLixun/video-publish-skill/issues"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sunshineLixun/video-publish-skill.git"
+  },
+  "type": "module",
+  "scripts": {
+    "audit:dependencies": "pnpm audit --registry=https://registry.npmjs.org --prod --audit-level high",
+    "build": "pnpm -r --if-present build && pnpm build:skill",
+    "build:skill": "node scripts/build-skill.mjs",
+    "check:opensource": "node scripts/check-open-source.mjs",
+    "check-types": "pnpm -r --if-present check-types",
+    "dev": "pnpm --filter @video-publish/runtime dev",
+    "fmt": "oxfmt --ignore-path .oxfmtignore --write .",
+    "fmt:check": "oxfmt --ignore-path .oxfmtignore --check .",
+    "install:skill": "node scripts/install-skill.mjs",
+    "lint": "oxlint --ignore-path .eslintignore --deny-warnings .",
+    "lint:fix": "oxlint --ignore-path .eslintignore --fix ."
+  },
+  "devDependencies": {
+    "oxfmt": "^0.35.0",
+    "oxlint": "^1.50.0",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@11.13.1"
+}

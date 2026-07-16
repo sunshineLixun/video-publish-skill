@@ -1,0 +1,36 @@
+# Dependencies and build outputs
+node_modules/
+dist/
+build/
+coverage/
+output/
+*.tsbuildinfo
+
+# Local video-publish state and media
+.video-publish/
+.video-publisher/
+*.mp4
+*.mov
+*.mkv
+*.webm
+
+# Local application state
+*.log
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Environment and machine-local configuration
+.env
+.env.*
+!.env.example
+*.local
+.react-router/
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/

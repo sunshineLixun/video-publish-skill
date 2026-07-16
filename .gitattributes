@@ -1,0 +1,15 @@
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.mp4 binary
+*.mov binary
+*.mkv binary
+*.webm binary
+
+*.sh text eol=lf
+*.mjs text eol=lf
+*.py text eol=lf

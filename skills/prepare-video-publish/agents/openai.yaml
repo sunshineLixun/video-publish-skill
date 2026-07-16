@@ -1,0 +1,4 @@
+interface:
+  display_name: "准备视频发布"
+  short_description: "在当前任务生成发布文案和四比例 AI 封面"
+  default_prompt: "使用 $prepare-video-publish 在当前任务处理我提供的视频或字幕，生成发布文案和四种封面，等待我确认后再打开发布页。"

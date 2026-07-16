@@ -1,0 +1,22 @@
+# Changelog
+
+All notable changes to this project will be documented in this file. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow Semantic Versioning.
+
+## [Unreleased]
+
+### Added
+
+- Open-source governance, security, contribution, CI, and release documentation.
+- Reproducible pnpm 11 toolchain with the current npm vulnerability-audit endpoint.
+
+## [0.1.0] - 2026-07-15
+
+### Added
+
+- Local-first Codex workflow for transcript-driven publishing copy and four cover ratios.
+- Immutable local session and cover version contracts.
+- Confirmed creator-page opening for six platforms.
+- Ego Lite staging for Xiaohongshu, Douyin, Bilibili, and WeChat Channels.
+- Real topic/tag verification, original-declaration safeguards, cover mapping, interruption recovery,
+  and a hard guard against final publishing.

@@ -1,0 +1,28 @@
+{
+  "name": "@video-publish/runtime",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local CLI runtime for Video Publish Skill",
+  "license": "Apache-2.0",
+  "bin": {
+    "video-publish": "./dist/video-publish.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "check-types": "tsc --noEmit",
+    "dev": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "@video-publish/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.11",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
