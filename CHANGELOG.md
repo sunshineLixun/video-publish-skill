@@ -14,6 +14,8 @@ All notable changes to this project will be documented in this file. The format 
 
 - Development and CI now require Node.js 22.13+ because pnpm 11 uses the built-in `node:sqlite`
   module; the bundled Skill CLI continues to target Node.js 20.
+- Public documentation now separates the contributor development guide from the CLI reference and
+  removes obsolete migration-oriented implementation notes.
 
 ## [0.1.0] - 2026-07-15
 

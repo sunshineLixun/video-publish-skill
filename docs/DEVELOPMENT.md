@@ -1,376 +1,167 @@
-# Video Publish Skill 开发文档
+# Video Publish Skill 开发指南
 
-## 1. 产品定义
+本文面向准备修改源码、平台适配器或安装包的贡献者。产品能力与安装方式见
+[README](../README.md)，命令参数见 [CLI 手册](CLI.md)，架构和安全理由见
+[ARCHITECTURE.md](ARCHITECTURE.md) 与 [架构决策记录](decisions/README.md)。
 
-Video Publish Skill 是一个开源、本地优先、Codex 原生的视频发布准备工作流。
+## 开发环境
 
-唯一交互入口是用户当前打开的 Codex 任务。Skill 不创建 Web 页面，不启动本地服务器，
-也不通过 app-server 创建第二个 Codex 任务。文本草稿、封面预览、参考图输入、修改反馈和
-发布确认都发生在同一任务中。
+- Node.js 22.13 或更高版本。
+- pnpm 11；准确版本由根目录 `packageManager` 字段锁定。
+- Git。
+- 修改字幕处理时需要 FFmpeg、FFprobe、Python 3 和可选的 `faster-whisper`。
+- 修改页面打开逻辑时需要 Chrome 或 Chromium。
+- 修改自动暂存适配器时需要 Ego Lite 和 `ego-browser`。
 
-最终能力：
+仓库的开发工具使用 Node.js 22.13+，但构建出的 Skill CLI 仍以 Node.js 20 为目标。
 
-- 从视频或字幕获得完整转写文本。
-- 根据字幕生成摘要、标题、简介和封面文案。
-- 使用 Codex 内置 ImageGen 独立生成 `16:9`、`4:3`、`3:4`、`9:16` 完整封面。
-- 接受风格、构图和人物参考图。
-- 通过自然语言进行多轮、局部封面修改。
-- 用户明确确认后，在 Chrome 打开小红书、微博、知乎、Bilibili、抖音、微信视频号发布页。
-- 用户进一步明确授权后，通过 Ego Lite 为小红书、抖音、Bilibili、微信视频号上传视频、
-  对应封面并填写文案。
-- 最终发布始终由用户人工检查和点击。
+## 本地设置
 
-## 2. 非目标
-
-- 不部署网站、SaaS 或公网后端。
-- 不提供 React 审核页面、本地 HTTP API 或 SSE。
-- 不启动后台 Agent，不调用 Codex app-server，不创建或恢复其他任务。
-- 不调用平台开放 API，不导出或解析 Cookie。
-- 不自动点击最终发布按钮。
-- 不绕过验证码、扫码登录或平台风控。
-- 不读取、截取或分析视频帧来制作封面。
-- 不使用 React、Canvas、SVG 或 HTML 叠加封面文字。
-
-## 3. 用户流程
-
-```text
-当前 Codex 任务
-      |
-      | 用户上传视频/字幕并调用 Skill
-      v
-prepare -> transcript.txt + session.json
-      |
-      | Codex 阅读完整字幕
-      v
-content.json -> finalize
-      |
-      | 当前任务中的 Codex ImageGen
-      v
-四比例完整封面 -> covers add
-      |
-      | 当前任务直接展示文案和图片
-      v
-用户自然语言修改 / 上传参考图
-      |
-      +---- 更新 content 或 coverSpec
-      +---- 只重做指定比例
-      +---- 生成不可变 vNNN 版本
-      |
-      v
-用户明确确认平台
-      |
-      v
-platforms open --confirmed -> Chrome
-      |
-      +---- 用户手动填写和发布
-      |
-      +---- 用户额外授权 Ego Lite 暂存
-                 |
-                 v
-      platforms stage --confirmed
-                 |
-                 v
-      并行检查/上传、串行填写、并行验收
-                 |
-                 v
-             用户手动发布
+```bash
+git clone https://github.com/sunshineLixun/video-publish-skill.git
+cd video-publish-skill
+corepack enable
+pnpm install --frozen-lockfile
 ```
 
-Skill 第一次展示结果后必须暂停。它不能把“生成完成”推断成“允许打开平台”，也不能复用
-历史平台选择作为当前确认。
+常用开发命令：
 
-## 4. 仓库结构
+```bash
+pnpm dev platforms list
+pnpm fmt
+pnpm check:opensource
+pnpm fmt:check
+pnpm lint
+pnpm check-types
+pnpm audit:dependencies
+pnpm build
+```
+
+## 仓库结构
 
 ```text
 video-publish-skill/
-├── README.md
-├── LICENSE
-├── docs/
-│   └── DEVELOPMENT.md
+├── .github/                         Issue、PR、Dependabot 与 CI 配置
+├── docs/                            架构、CLI、发布与决策文档
 ├── packages/
-│   ├── core/
-│   │   └── src/
+│   ├── core/src/                    Zod 数据契约与平台定义
 │   └── runtime/
-│       ├── src/
-│       └── scripts/transcribe.py
-├── scripts/
-│   ├── build-skill.mjs
-│   └── install-skill.mjs
-└── skills/
-    └── prepare-video-publish/
-        ├── SKILL.md
-        ├── agents/openai.yaml
-        ├── references/
-        └── scripts/
+│       ├── src/                     CLI 与确定性本地运行逻辑
+│       └── scripts/transcribe.py    faster-whisper 转写入口
+├── scripts/                         构建、安装与开源边界检查
+├── skills/prepare-video-publish/    可安装的 Codex Skill
+└── vendor/oil-video-publisher/      固定提交的 MIT 上游适配器
 ```
 
-`packages/core` 保存 Zod 数据契约，`packages/runtime` 只提供确定性本地操作。构建脚本将
-runtime 和转写脚本打包进最终 Skill。没有前端 workspace。
+`packages` 是可维护源码，不会发布到 npm：
 
-## 5. 技术选型
+- `packages/core` 定义 session、内容、封面、参考图和平台的数据结构。
+- `packages/runtime` 实现字幕处理、原子会话写入、封面版本、Chrome 启动和 Ego Lite 调度。
+- `skills/prepare-video-publish` 是 Codex 最终安装使用的成品。
+- `vendor/oil-video-publisher` 保存可审计、可复现的上游浏览器编排代码。
 
-- Agent 工作流：Codex Agent Skill。
-- 文本理解和多轮交互：当前 Codex 任务。
-- 图片生成：Codex 内置 ImageGen。
-- 数据校验：Zod。
-- 开发与构建：Node.js 22.13+、TypeScript、tsup；最终 runtime bundle 仍以 Node.js 20 为目标。
-- 字幕提取：FFmpeg/FFprobe。
-- 无字幕视频转写：Python 3、faster-whisper。
-- 平台启动：系统 Chrome/Chromium。
-- 平台暂存：Ego Lite 持久任务空间 + 状态化发布调度器。
+## 源码与生成物
 
-runtime 不依赖 Hono、React、React Router、Vite 或 app-server 协议。
+`pnpm build` 执行三个步骤：
 
-## 6. 会话契约
+1. 构建 `packages/core`。
+2. 把 `packages/runtime` 及其依赖打包为单文件 CLI。
+3. 将 CLI、转写脚本和固定版本的 Ego 引擎复制到可安装 Skill。
 
-每个输入创建一个本地会话：
+以下文件或目录由构建产生，不应直接修改：
+
+- `packages/core/dist/`
+- `packages/runtime/dist/`
+- `skills/prepare-video-publish/scripts/video-publish.mjs`
+- `skills/prepare-video-publish/scripts/ego-publisher/`
+
+修改 TypeScript 源码或 `vendor/` 后必须运行 `pnpm build`，并提交同步更新的 Skill 生成物。
+CI 会重新构建并通过 `git diff` 检查生成物是否过期。
+
+## 开发边界
+
+### Core
+
+跨命令共享的数据结构放在 `packages/core`。外部文件和 CLI 输入必须先通过 Zod 契约；不要在
+runtime 中复制一套手写校验。
+
+### Runtime
+
+`packages/runtime` 只负责可重复的本地操作。语义理解、文案创作和封面生成属于当前 Codex
+任务，不应搬进 CLI。会话写入必须继续使用临时文件、原子重命名和现有锁机制。
+
+### 平台适配器
+
+平台页面随时可能变化。适配器应保持以下阶段可区分、可恢复：
 
 ```text
-.video-publish/sessions/<uuid>/
-├── session.json
-├── transcript.txt
-├── content.json
-├── cover-spec.json
-├── references/
-└── covers/
-    ├── v001/
-    │   ├── landscape.png
-    │   ├── horizontal.png
-    │   ├── portrait.png
-    │   └── vertical.png
-    └── v002/
+inspect → upload → mutate → verify → hand off
 ```
 
-`session.json` v2 的核心结构：
+- 修改前读取当前页面事实，不把历史 job 状态当作页面事实。
+- 只操作当前视频对应的草稿。
+- 话题、标签、声明和封面必须在修改后重新读取并验收。
+- 登录、验证码、扫码和风控提示交还用户处理。
+- 不得点击或间接触发最终发布按钮。
 
-```json
-{
-  "version": 2,
-  "id": "uuid",
-  "createdAt": "ISO time",
-  "updatedAt": "ISO time",
-  "source": {
-    "kind": "video",
-    "originalPath": "/absolute/input.mov",
-    "videoPath": "/absolute/input.mov",
-    "subtitlePath": null,
-    "transcriptPath": "/absolute/session/transcript.txt"
-  },
-  "content": null,
-  "coverSpec": null,
-  "references": [],
-  "coverVersions": [],
-  "currentCoverVersion": null,
-  "selectedPlatforms": [],
-  "lastOpenedAt": null
-}
-```
+最终发布保持人工操作的原因见
+[ADR-001](decisions/001-manual-final-publish.md)。上游固定版本和本地修改规则见
+[ADR-002](decisions/002-vendored-ego-engine.md)。
 
-旧 Web 审核会话在读取时迁移为 v2：完整的旧封面成为 `v001`，旧参考图和 Prompt 进入新
-结构。执行 `session show` 会把迁移结果原子写回。
+## 本地数据与隐私
 
-## 7. 内容契约
+运行时默认把媒体、转写和 session 写入当前目录的 `.video-publish/`。Ego 调度器还可能在用户
+主目录保存自己的 job 和锁状态。这些都不是测试夹具，不得提交或附到公开 Issue。
 
-Codex 根据完整字幕生成：
+提交前确认不存在：
 
-```json
-{
-  "summary": "内容摘要",
-  "title": "发布标题",
-  "description": "发布简介",
-  "cover": {
-    "headline": "封面主标题",
-    "subheadline": "封面副标题",
-    "category": "主题分类",
-    "keywords": ["关键词"],
-    "tone": "professional",
-    "emphasis": ["重点词"]
-  }
-}
-```
+- 视频、封面、字幕和真实 session；
+- Cookie、Token、二维码、账号名和页面截图；
+- 个人绝对路径、浏览器状态和调试日志；
+- 未经归属说明的新第三方代码。
 
-所有事实必须来自字幕。封面视觉可以由 Prompt 设计，但不得把视频中未由字幕说明的场景、
-人物、产品或动作当成事实。
+`pnpm check:opensource` 会检查常见泄露模式和必需治理文件，但不能替代人工复核。
 
-## 8. 封面规格与版本
+## 质量检查
 
-`coverSpec` 是当前生成意图：
+| 命令                      | 作用                                                 |
+| ------------------------- | ---------------------------------------------------- |
+| `pnpm check:opensource`   | 检查敏感路径、常见凭据、必需文件和本地 Markdown 链接 |
+| `pnpm fmt:check`          | 检查 OXC 格式                                        |
+| `pnpm lint`               | 运行 OXC lint，并把 warning 视为失败                 |
+| `pnpm check-types`        | 检查两个 TypeScript workspace                        |
+| `pnpm audit:dependencies` | 通过官方 npm Registry 检查高危生产依赖漏洞           |
+| `pnpm build`              | 构建源码并刷新可安装 Skill                           |
 
-- `instruction`：触发本版本的最新用户要求。
-- `prompt`：完整视觉方向。
-- `negativePrompt`：避免内容。
-- `ratioPrompts`：四个比例的独立构图要求。
-- `preserveIdentity`：人物一致性要求。
-- `referenceAssetIds`：风格、构图和普通主体参考。
-- `personAssetIds`：人物身份参考。
+GitHub CI 在每个 Pull Request 和 `main` push 上执行以上门禁，并检查生成物没有未提交差异。
 
-每个 `coverVersion` 保存：
+## 手动验证
 
-- 单调递增版本号。
-- 创建时间。
-- 当时的完整 spec 快照。
-- 本次真正变化的比例。
-- 四张最终 PNG 路径；旧会话可以暂时缺少 `horizontal`。
-
-新会话第一版应提供四张图。runtime 为兼容旧会话仍接受没有 `4:3 horizontal` 的旧版本；
-这类会话必须补充 `horizontal`，或使用 `--skip-cover`，才能暂存 Bilibili 与微信视频号。
-后续可以只更新部分比例，runtime 会把其余比例复制到新版本。旧版本永不覆盖，便于用户在
-同一任务中比较或恢复。
-
-图片必须由 Codex ImageGen 完成背景、主体、标题文字和最终排版。Agent 接受结果前检查：
-
-- 标题、副标题拼写准确，无乱码。
-- 缩略图下仍可读。
-- 构图符合目标比例和安全区域。
-- 没有额外文字、Logo 或水印。
-- 使用人物参考时身份特征一致。
-
-## 9. CLI
-
-### 准备与内容
+没有真实平台账号时，至少完成：
 
 ```bash
-video-publish prepare --input /path/video-or-subtitle
-video-publish finalize --session /path/session.json --content /path/content.json
-video-publish session show --session /path/session.json
-```
-
-### 封面规格与参考图
-
-```bash
-video-publish spec show --session /path/session.json
-video-publish spec set --session /path/session.json --file /path/cover-spec.json
-
-video-publish references add \
-  --session /path/session.json \
-  --role reference \
-  --image /path/reference.png
-
-video-publish references list --session /path/session.json
-```
-
-### 封面版本
-
-```bash
-video-publish covers add \
-  --session /path/session.json \
-  --landscape /path/landscape.png \
-  --horizontal /path/horizontal-4x3.png \
-  --portrait /path/portrait.png \
-  --vertical /path/vertical.png
-
-video-publish covers add --session /path/session.json --vertical /path/new-vertical.png
-video-publish covers current --session /path/session.json
-```
-
-### 视频与平台
-
-```bash
-video-publish video set --session /path/session.json --file /path/video.mp4
-video-publish platforms list
-
-video-publish platforms open \
-  --session /path/session.json \
-  --confirmed \
-  --platform rednote \
-  --platform bilibili
-
-video-publish platforms stage \
-  --session /path/session.json \
-  --confirmed \
-  --platform rednote \
-  --platform douyin \
-  --platform bilibili \
-  --platform wechat_channels
-```
-
-`platforms open` 和 `platforms stage` 在以下条件全部满足前拒绝执行：
-
-- 当前 Codex 任务中的用户已经明确确认。
-- CLI 收到 `--confirmed`。
-- 至少选择一个平台注册 ID。
-- 会话已有视频、最终内容和完整封面版本。
-
-Ego Lite 后端支持 `rednote`、`douyin`、`bilibili`、`wechat_channels`：每个平台使用一个持久
-任务空间，只读检查和视频上传并行，元数据、话题/标签、声明和封面修改串行，最终页面验收
-再次并行。运行状态、草稿身份、页面证据和封面回执保存在 session 的 `ego/` 目录中，最终
-任务空间移交用户复核，但从不点击发布按钮。
-
-封面映射为：小红书 `3:4`；抖音 `3:4` 和可用的 `4:3`；Bilibili `4:3`；微信视频号
-`3:4 + 4:3`。`--skip-cover` 保留平台生成封面。
-
-Bilibili 是唯一有自动旧草稿隔离流程的平台：先恢复“继续编辑”，同稿复用；若文件名或标题
-表明是其他稿件，则先“存草稿”，回到干净上传页并重新验证后再上传当前视频。
-
-`--confirm-original-rights` 只在用户本次明确确认权利后使用，并启用小红书、Bilibili、微信
-视频号的已验证声明动作。上游当前抖音适配器没有声明 gate 或 mutation，不能因为 README
-列出了该能力就误报已经设置。
-
-## 10. Codex 交互规范
-
-当前任务是唯一控制面。Skill 需要：
-
-1. 自动完成首次字幕处理、文案和四封面生成。
-2. 在当前消息中展示完整草稿与绝对路径图片。
-3. 等待用户自然语言反馈。
-4. 对局部修改只重做必要比例。
-5. 每次修改后展示新的完整四比例版本。
-6. 仅在明确确认后打开指定平台。
-7. 仅在用户进一步明确要求自动填写时，执行四个受支持平台的 Ego Lite 暂存。
-
-Skill 不应模拟 Web 表单。平台多选通过用户自然语言表达；参考图通过 Codex 输入附件提供；
-版本和状态由本地 session 保证，不依赖聊天上下文永久保存。
-
-## 11. 安全与隐私
-
-- 所有媒体与 session 默认留在本机。
-- runtime 只接受本地路径和固定平台 ID，不接受客户端任意 URL。
-- 参考图先复制到当前 session，再用于 ImageGen。
-- Prompt 和用户指令写入 JSON，不拼接到 shell 命令。
-- 普通 Chrome 打开操作使用参数数组启动。
-- Ego Lite 只复用其隔离任务空间中的登录态，不导出登录状态。
-- `--confirmed` 是 CLI 的第二层人机确认保护。
-- `platforms open` 打开页面后 Agent 立即停止。
-- `platforms stage` 只能上传、填写和检查；页面级保护必须拦截最终发布按钮。
-- session 写入使用文件锁、临时文件和原子重命名。
-
-## 12. 构建与安装
-
-```bash
-pnpm install
-pnpm fmt
-pnpm check-types
-pnpm lint
-pnpm fmt:check
 pnpm build
-pnpm install:skill --force
+node skills/prepare-video-publish/scripts/video-publish.mjs platforms list
+pnpm install:skill --destination /tmp/prepare-video-publish-check
 ```
 
-`pnpm build` 只构建 core、runtime 和最终 Skill。安装后无需运行 Vite、后台进程或本地服务。
+平台适配器的人工验证必须使用维护者控制的账号和可丢弃草稿：
 
-## 13. 验收标准
+- 使用不含私人信息的测试媒体。
+- 验证中断恢复和重复运行不会重复修改。
+- 确认最终状态是“等待用户复核”，不是“已经发布”。
+- 不在自动化测试或发布流程中执行真实发布。
 
-- 视频与 SRT、VTT、ASS、SSA、TXT 输入可生成 transcript。
-- 文案通过 Zod 后才能写入 session。
-- 当前 Codex 任务直接展示文案和四张封面。
-- 参考图被复制、校验并按角色记录。
-- 新会话初始封面要求四个比例，旧三比例会话可追加 `4:3`，后续支持局部比例版本。
-- 旧版本不被覆盖。
-- 未明确确认时不能打开平台。
-- 未额外授权自动填写时只能打开平台。
-- Ego Lite 暂存支持小红书、抖音、Bilibili、微信视频号，并按平台映射 `3:4 / 4:3` 封面。
-- 小红书和抖音必须验证真实话题实体；Bilibili 必须验证精确标签集合和旧草稿身份。
-- 暂存完成或超时后页面保持打开，最终发布必须人工执行。
-- 源码和 Skill 包中不存在 Web reviewer、Hono、SSE 或 app-server 桥接。
-- TypeScript、lint、格式、Skill 校验和生产构建全部通过。
+## 文档与发布
 
-## 14. 开源维护
+- 用户安装和能力说明：[README](../README.md)
+- CLI 命令：[CLI.md](CLI.md)
+- 架构与信任边界：[ARCHITECTURE.md](ARCHITECTURE.md)
+- Agent 工作流：[SKILL.md](../skills/prepare-video-publish/SKILL.md)
+- 内容与封面契约：`skills/prepare-video-publish/references/`
+- 上游来源：[UPSTREAM.md](../vendor/oil-video-publisher/UPSTREAM.md)
+- 贡献流程：[CONTRIBUTING.md](../CONTRIBUTING.md)
+- 发布清单：[RELEASING.md](RELEASING.md)
 
-- 架构总览见 [ARCHITECTURE.md](ARCHITECTURE.md)，重要安全与分发选择记录在
-  [架构决策](decisions/README.md)。
-- 贡献必须遵循根目录的 `CONTRIBUTING.md`、`SECURITY.md` 和 `CODE_OF_CONDUCT.md`。
-- `pnpm check:opensource` 检查必需治理文件、个人绝对路径、私钥与常见凭据格式。
-- GitHub CI 在每个 Pull Request 和 `main` push 上执行格式、lint、类型、构建、生成物一致性
-  和生产依赖审计。
-- 发布前按 [RELEASING.md](RELEASING.md) 检查版本、Changelog、上游归属和临时安装包。
-- 私人 session、媒体、页面证据、浏览器状态和登录信息不得进入版本库或公开 Issue。
+用户可见行为发生变化时更新 README 与 Changelog；架构选择发生变化时新增 ADR，不覆盖已有
+决策记录。

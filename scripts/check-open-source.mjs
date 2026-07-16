@@ -33,6 +33,7 @@ const requiredFiles = [
   ".github/ISSUE_TEMPLATE/feature_request.yml",
   ".github/PULL_REQUEST_TEMPLATE.md",
   "docs/ARCHITECTURE.md",
+  "docs/CLI.md",
   "docs/RELEASING.md",
   "docs/decisions/001-manual-final-publish.md",
   "docs/decisions/002-vendored-ego-engine.md",

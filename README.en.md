@@ -1,6 +1,6 @@
 # Video Publish Skill
 
-[中文](README.md) · [Development](docs/DEVELOPMENT.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md)
+[中文](README.md) · [Development](docs/DEVELOPMENT.md) · [CLI](docs/CLI.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md)
 
 A local-first Codex skill that prepares video publishing assets. It creates platform copy and four
 AI cover ratios from a video or transcript, then—with explicit user authorization—can stage the
