@@ -20,7 +20,7 @@ button.
 - Create independent `16:9`, `4:3`, `3:4`, and `9:16` covers with Codex ImageGen.
 - Preserve immutable cover versions and support reference images and partial ratio revisions.
 - Open confirmed creator pages in Chrome or Chromium.
-- Optionally stage forms for Xiaohongshu, Douyin, Bilibili, and WeChat Channels through Ego Lite.
+- Optionally stage forms for Xiaohongshu, Douyin, Bilibili, and WeChat Channels through [Ego Lite](https://lite.ego.app/).
 - Persist local session state for interruption recovery and page-fact verification.
 
 ## Install
